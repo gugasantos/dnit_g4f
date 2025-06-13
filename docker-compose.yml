@@ -1,0 +1,11 @@
+services:
+  python-app:
+    build: .
+    volumes:
+      # Mapear a pasta do Windows (via WSL) para o contêiner Docker
+      - ./app:/app
+      - "/mnt/c/Users/G4F/OneDrive - G4F SOLUÇÕES CORPORATIVAS/Documentos/imagensgrifadas:/app/imagens"
+
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python3 /app/transformaimg.py

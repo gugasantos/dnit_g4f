@@ -1,0 +1,2 @@
+@echo off
+wsl -d Ubuntu bash -c "cd /home/servicenow/trabalho/pythonproject && docker-compose up"
