@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw
 
 # Abre a imagem base
 
-imagem = Image.open("/app/imagens/imagensgrifadas.png").convert("RGBA")
+imagem = Image.open("/app/imagens/imagensgrifadas2.png").convert("RGBA")
 
 
 # Cria uma camada transparente para marcações
@@ -28,13 +28,10 @@ draw = ImageDraw.Draw(marca)
 cor_marca = (255, 255, 0, 100)
 
 areas_para_destacar = [
-    (6, 37, 118, 65),   # data da postagem
-    (575, 40, 637, 68),   # situação
-    (576, 63, 687, 81),   # Entrega Confirmada
-    (6, 188, 140, 209),   # Serviço de experdição
-    (6, 210, 60, 236),   # SNE
-    (6, 497, 105, 516),   # Número do Auto
-    (6, 515, 94, 543),   # Número
+    (6, 130, 113, 151),   # Numero do auto
+    (6, 159, 85, 175),   # número
+    (6, 676, 119, 696),   # Adesão ao SNE
+    (578, 725, 650, 744),   # Com opção
 ]
 
 for x1, y1, x2, y2 in areas_para_destacar:
@@ -44,4 +41,4 @@ for x1, y1, x2, y2 in areas_para_destacar:
 imagem_marcada = Image.alpha_composite(imagem, marca)
 
 # Salva o resultado
-imagem_marcada.convert("RGB").save("/app/imagens/imagemgrifada.jpg", "JPEG")
+imagem_marcada.convert("RGB").save("/app/imagens/imagemgrifada2.jpg", "JPEG")

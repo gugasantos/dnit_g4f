@@ -8,4 +8,4 @@ services:
 
     environment:
       - PYTHONUNBUFFERED=1
-    command: python3 /app/transformaimg.py
+    command: sh -c "python3 /app/transformaimg.py && python3 /app/transformaimg2.py && python3 /app/transformapdf.py"
