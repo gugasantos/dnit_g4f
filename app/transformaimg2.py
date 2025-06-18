@@ -1,44 +1,79 @@
 from PIL import Image, ImageDraw
+import pytesseract
 
-# Abre a imagem base
-
+# Abre imagem
 imagem = Image.open("/app/imagens/imagensgrifadas2.png").convert("RGBA")
 
+# OCR com coordenadas
+ocr = pytesseract.image_to_data(imagem, lang='por', output_type=pytesseract.Output.DICT)
 
-# Cria uma camada transparente para marcações
+# Frases a serem grifadas
+alvos = [
+    "Adesão ao SNE",
+    "Com Opção",
+    "Número do Auto"
+]
+alvos = [a.lower() for a in alvos]
+
+# Inicializa marcação
 marca = Image.new("RGBA", imagem.size, (255, 255, 255, 0))
-
 draw = ImageDraw.Draw(marca)
 
+n = len(ocr["text"])
+valor_extraido = None
 
-# | Elemento         | Coordenadas `(x1, y1, x2, y2)` |
-# | ---------------- | ------------------------------ |
-# | `e-Carta`        | `(104, 135, 190, 150)`         |
-# | `Número do Auto` | `(120, 408, 285, 430)`         |
-# | `Infrator`       | `(125, 481, 490, 505)`         |
+for i in range(n):
+    palavras = []
+    coords = []
+    for j in range(i, min(i + 5, n)):  # Tenta formar frases de até 5 palavras
+        palavra = ocr["text"][j].strip()
+        if palavra == "":
+            break
+        palavras.append(palavra.lower())
+        coords.append(j)
+        frase = " ".join(palavras)
 
-# x1 = X
-# y1 = Y
-# x2 = X + W
-# y2 = Y + H
+        if frase in alvos:
+            # Grifa a frase
+            x1 = min([ocr["left"][k] for k in coords])
+            y1 = min([ocr["top"][k] for k in coords])
+            x2 = max([ocr["left"][k] + ocr["width"][k] for k in coords])
+            y2 = max([ocr["top"][k] + ocr["height"][k] for k in coords])
+            draw.rectangle([x1, y1, x2, y2], fill=(255, 255, 0, 100))
 
+            # Se for a frase "número do auto", procura o valor abaixo
+            if frase == "número do auto":
+                centro_x = (x1 + x2) / 2
+                base_y = y2
+                menor_dist = float("inf")
+                valor_abaixo = None
+                coord_valor = None
 
+                for k in range(n):
+                    if ocr["text"][k].strip() == "":
+                        continue
+                    x = ocr["left"][k]
+                    y = ocr["top"][k]
+                    w = ocr["width"][k]
+                    h = ocr["height"][k]
+                    centro_palavra = x + w / 2
 
-# Cor da marca-texto (amarelo translúcido)
-cor_marca = (255, 255, 0, 100)
+                    if abs(centro_palavra - centro_x) < 60 and y > base_y:
+                        dist = y - base_y
+                        if dist < menor_dist:
+                            menor_dist = dist
+                            valor_abaixo = ocr["text"][k].strip()
+                            coord_valor = (x, y, x + w, y + h)
 
-areas_para_destacar = [
-    (6, 130, 113, 151),   # Numero do auto
-    (6, 159, 85, 175),   # número
-    (6, 676, 119, 696),   # Adesão ao SNE
-    (578, 725, 650, 744),   # Com opção
-]
+                if valor_abaixo and coord_valor:
+                    draw.rectangle(coord_valor, fill=(255, 255, 0, 100))
+                    valor_extraido = valor_abaixo
+            break
 
-for x1, y1, x2, y2 in areas_para_destacar:
-    draw.rectangle([x1, y1, x2, y2], fill=(255, 255, 0, 100))
-
-# Mescla com a imagem original
+# Salva imagem final
 imagem_marcada = Image.alpha_composite(imagem, marca)
-
-# Salva o resultado
 imagem_marcada.convert("RGB").save("/app/imagens/imagemgrifada2.jpg", "JPEG")
+
+# Exibe valor extraído
+if valor_extraido:
+    print(f"[{valor_extraido}]")

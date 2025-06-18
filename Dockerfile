@@ -1,17 +1,28 @@
-# Usar uma imagem oficial do Python
+# Usar imagem oficial do Python
 FROM python:3.12-slim
 
-# Definir o diretório de trabalho
+# Instalar Tesseract com suporte ao idioma português
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    tesseract-ocr-por \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar o arquivo requirements.txt para o diretório de trabalho
+# Copiar e instalar dependências Python
 COPY requirements.txt .
-
-# Instalar as dependências do Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar o código fonte da aplicação
+# Garantir que Pillow e pytesseract estão presentes
+RUN pip install --no-cache-dir pillow pytesseract
+
+# Copiar a aplicação
 COPY . .
 
-# Definir o comando para rodar o script Python
+# Definir o comando de execução
 CMD ["python", "transformaimg.py"]
