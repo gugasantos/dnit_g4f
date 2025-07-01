@@ -1,0 +1,1 @@
+wsl -d Ubuntu bash -c "cd /home/servicenow/trabalho/pythonproject && docker-compose run python-app python3 /app/mergedasimagens.py"
